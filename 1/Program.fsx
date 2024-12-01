@@ -1,44 +1,39 @@
 ﻿open System.IO
 
-let e = [for i in File.ReadAllLines("1/input.txt") do i.Split "   "]
-
 let a, b =
-    e
-    |> List.fold (
-        fun (l1, l2) b -> 
-            ((b[0] |> int) :: l1, (b[1] |> int) :: l2)
+    File.ReadAllLines("1/input.txt")
+    |> Array.fold 
+        (fun (l1, l2) b -> 
+            let sp = b.Split "   "
+            (int sp[0] :: l1, int sp[1] :: l2)
         )
         ([], [])
-        
+    |> fun (x, y) -> (List.sort x, List.sort y)
 
-
-let sortedA = List.sort a
-let sortedB = List.sort b
-
-let count = List.fold2 (fun acc x y -> acc + abs (x - y)) 0 sortedA sortedB
+let count = List.fold2 (fun acc x y -> acc + abs (x - y)) 0 a b
 
 printfn $"{count}"
 
 // -----------------
 
 let bMap =
-    sortedB 
+    b 
     |> List.fold 
-        (fun (acc: Map<int,int>) (i: int) -> 
+        (fun (acc: Map<int,int>) i -> 
             acc.Change(i,
                 function
                     | Some x -> Some (x + 1)
-                    | None -> None
+                    | None -> Some 1
                 )
         )
-        (Map([for i in sortedB do (i, 0)]))
+        Map.empty
 
 let count2 =
     List.fold
         (fun acc x -> 
-            acc + (x * (if bMap.ContainsKey(x) then bMap[x] else 0))
+            acc + (x * (bMap.TryFind x |> Option.defaultValue 0))
         )
         0
-        sortedA 
+        a 
 
 printfn $"{count2}"
