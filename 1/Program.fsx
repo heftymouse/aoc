@@ -2,12 +2,13 @@
 
 let a, b =
     File.ReadAllLines("1/input.txt")
-    |> Array.fold 
-        (fun (l1, l2) b -> 
-            let sp = b.Split "   "
-            (int sp[0] :: l1, int sp[1] :: l2)
+    |> Array.toList
+    |> List.map
+        (fun line ->
+            let sp = line.Split "   "
+            (int sp[0], int sp[1])
         )
-        ([], [])
+    |> List.unzip
     |> fun (x, y) -> (List.sort x, List.sort y)
 
 let count = List.fold2 (fun acc x y -> acc + abs (x - y)) 0 a b
