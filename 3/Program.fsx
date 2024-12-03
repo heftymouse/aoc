@@ -11,23 +11,29 @@ printfn "%d" mul
 
 // -----------------
 
-let (|StartsWith|_|) (p:string) (m:Match) =
-    if m.Value.StartsWith p then
-        if p.Equals("mul") then
-            Some (List.map int (List.tail [ for x in m.Groups -> x.Value ]))
-        else Some []
-    else None
+type Action =
+    Mul of (int * int)
+    | Do
+    | Dont
+    | Nop
+
+let (|MatchVerb|_|) (m:Match) =
+    match m.Groups["verb"].Value with
+    | "mul" ->  Some (Mul (int m.Groups["arg1"].Value, int m.Groups["arg2"].Value))
+    | "don't" -> Some Dont
+    | "do" -> Some Do
+    | _ -> None
 
 let mul2 = 
-    Regex(@"(?:do\(\))|(?:don't\(\))|(?:mul\((\d+),(\d+)\))").Matches(data)
+    Regex(@"(?<verb>(?:don't)|(?:do)|(?:mul))\(((?<arg1>\d+),(?<arg2>\d+))*\)").Matches(data)
     |> Seq.fold
         (fun (acc:int, shouldDo:bool) e ->
             match e with
-            | StartsWith "mul" e -> (if shouldDo then acc + e[0] * e[1] else acc), shouldDo
-            | StartsWith "do(" _ -> acc, true
-            | StartsWith "don't(" _ -> acc, false
+            | MatchVerb (Mul (x, y)) -> (if shouldDo then acc + (x * y) else acc), shouldDo
+            | MatchVerb Do -> acc, true
+            | MatchVerb Dont -> acc, false
             | _ -> acc, shouldDo
         )
         (0, true)
 
-printfn $"{mul2}"
+printfn $"{fst mul2}"
