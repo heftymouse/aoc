@@ -15,7 +15,6 @@ type Action =
     Mul of (int * int)
     | Do
     | Dont
-    | Nop
 
 let (|MatchVerb|_|) (m:Match) =
     match m.Groups["verb"].Value with
