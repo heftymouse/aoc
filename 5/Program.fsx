@@ -3,7 +3,7 @@ open System.IO
 let data = File.ReadAllLines("5/input.txt");
 let spec =
     data
-    |> Array.filter (fun e -> e.IndexOf('|') <> -1)
+    |> Array.filter _.Contains('|')
     |> Array.map
         (fun e ->
             let sp = e.Split('|')
@@ -23,7 +23,7 @@ let spec =
 
 let count =
     data
-    |> Array.filter (fun e -> e.IndexOf(',') <> -1)
+    |> Array.filter _.Contains(',')
     |> Array.fold
         (fun acc e ->
             let nums = e.Split(',') |> Array.map int
@@ -44,7 +44,7 @@ printfn "%d" count
 
 let count2 =
     data
-    |> Array.filter (fun e -> e.IndexOf(',') <> -1)
+    |> Array.filter _.Contains(',')
     |> Array.fold
         (fun acc e ->
             let nums = e.Split(',') |> Array.map int
@@ -55,16 +55,17 @@ let count2 =
                     (fun e -> (Set.intersect ((Map.tryFind e spec) |> Option.defaultValue Set.empty) numSet).Count)
                 ) = [|0..nums.Length - 1|] 
 
-            let x =
+            let x () =
                 nums 
                 |> Array.map
                     (fun e ->
                         (e, (Set.intersect ((Map.tryFind e spec) |> Option.defaultValue Set.empty) numSet).Count)
                     )
-                |> Array.sortBy (fun (_, len) -> len)
-                |> Array.map (fun (e, _) -> e)
+                |> Array.sortBy snd
+                |> Array.map fst
+                |> (fun e -> e[e.Length / 2])
                 
-            if not valid then acc + (x[x.Length / 2]) else acc
+            if not valid then acc + x () else acc
         )
         0
 
